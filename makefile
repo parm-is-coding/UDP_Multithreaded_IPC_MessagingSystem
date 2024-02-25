@@ -1,7 +1,7 @@
 all: build 
 	
 build:
-	gcc -Wall -Werror -g -D _POSIX_C_SOURCE=200809L -lpthread main.c receiver.c sender.c -o s-talk
+	gcc -Wall -g -D _POSIX_C_SOURCE=200809L -lpthread main.c receiver.c sender.c list.c -o s-talk
 
 run1: build
 	clear
