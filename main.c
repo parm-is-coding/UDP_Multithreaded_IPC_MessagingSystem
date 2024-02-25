@@ -6,8 +6,7 @@
 #include "sender.h"
 
 
-//#include  "scanner.h"
-//#include "printer.h"
+
 
 
 
