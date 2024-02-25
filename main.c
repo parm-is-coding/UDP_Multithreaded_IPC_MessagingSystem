@@ -8,6 +8,9 @@
 //#include  "scanner.h"
 //#include "printer.h"
 
+//Note: printerthread encapsulated inside receiver.h
+//Note: keyboardthread encapsulated inside sender.h 
+
 int main(int argc,char** args){
     if(argc != 4){
         printf("usage: s-talk <localPort> <remoteIP> <remotePort>\n");
@@ -22,6 +25,7 @@ int main(int argc,char** args){
 
     
     Receiver_init(localPort);
+    //Printer_int(pReceiverToPrinterBuffer);
     Sender_init(remoteIp,remotePort);
 
     Receiver_shutDown();
