@@ -1,20 +1,26 @@
 #include <stdio.h>// printf()
 #include <stdlib.h>// exit()
 
+
 #include "receiver.h"
 #include "sender.h"
+#include "list.h"
+//#include  "scanner.h"
+//#include "printer.h"
 
 int main(int argc,char** args){
     if(argc != 4){
         printf("usage: s-talk <localPort> <remoteIP> <remotePort>\n");
         exit(1);
     }
+    List* pReceiverToPrinterBuffer = List_create();
+    List* pScannerToSenderBuffer = List_create();
     const char* localPort = args[1];
     const char* remoteIp = args[2];
     const char* remotePort = args[3];
     printf("localPort: %s ip: %s remotePort: %s\n",localPort,remoteIp,remotePort);
 
-
+    
     Receiver_init(localPort);
     Sender_init(remoteIp,remotePort);
 
