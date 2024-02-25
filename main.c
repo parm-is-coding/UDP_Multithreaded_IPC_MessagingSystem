@@ -2,7 +2,7 @@
 #include <stdlib.h>// exit()
 
 #include "receiver.h"
-
+#include "sender.h"
 
 int main(int argc,char** args){
     if(argc != 4){
@@ -16,9 +16,9 @@ int main(int argc,char** args){
 
 
     Receiver_init(localPort);
-    //Sender_init(remoteIp,remotePort);
+    Sender_init(remoteIp,remotePort);
 
     Receiver_shutDown();
-    //Sender_shutDown();
+    Sender_shutDown();
     return 0;
 }
