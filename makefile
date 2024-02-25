@@ -1,7 +1,7 @@
 all: build 
 	
 build:
-	gcc -g main.c -o s-talk
+	gcc -Wall -Werror -g -D _POSIX_C_SOURCE=200809L -lpthread main.c receiver.c -o s-talk
 
 run1:
 	./s-talk 4455 127.0.0.1 22110

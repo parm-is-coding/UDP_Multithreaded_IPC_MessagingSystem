@@ -1,6 +1,7 @@
 #include <stdio.h>// printf()
 #include <stdlib.h>// exit()
 
+#include "receiver.h"
 
 
 int main(int argc,char** args){
@@ -14,10 +15,10 @@ int main(int argc,char** args){
     printf("localPort: %s ip: %s remotePort: %s",localPort,remoteIp,remotePort);
 
 
-    // Receiver_init();
+    Receiver_init(localPort);
     // Sender_init(ipserv,port);
 
-    // Receiver_shutDown();
+    Receiver_shutDown();
     // Sender_shutDown();
     return 0;
 }
