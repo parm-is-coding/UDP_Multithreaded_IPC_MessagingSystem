@@ -6,19 +6,19 @@
 
 int main(int argc,char** args){
     if(argc != 4){
-        printf("usage: s-talk <localPort> <remoteIP> <remotePort>");
+        printf("usage: s-talk <localPort> <remoteIP> <remotePort>\n");
         exit(1);
     }
     const char* localPort = args[1];
     const char* remoteIp = args[2];
     const char* remotePort = args[3];
-    printf("localPort: %s ip: %s remotePort: %s",localPort,remoteIp,remotePort);
+    printf("localPort: %s ip: %s remotePort: %s\n",localPort,remoteIp,remotePort);
 
 
     Receiver_init(localPort);
-    // Sender_init(ipserv,port);
+    //Sender_init(remoteIp,remotePort);
 
     Receiver_shutDown();
-    // Sender_shutDown();
+    //Sender_shutDown();
     return 0;
 }

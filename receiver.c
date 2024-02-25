@@ -9,7 +9,7 @@ static char* rxPort;
 void Receiver_init(const char* localPort){
     rxPort = (char*)malloc(100);
     strncpy(rxPort,localPort,100);
-    printf("\nRecieving From Port#%s",rxPort);
+    printf("Recieving From Port#%s\n",rxPort);
 
 }
 void Receiver_shutDown(void){
