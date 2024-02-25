@@ -1,16 +1,19 @@
 #include <stdio.h>// printf()
 #include <stdlib.h>// exit()
-
+#include <pthread.h>
 
 #include "receiver.h"
 #include "sender.h"
 #include "list.h"
+
 //#include  "scanner.h"
 //#include "printer.h"
 
+
+
 //Note: printerthread encapsulated inside receiver.h
 //Note: keyboardthread encapsulated inside sender.h 
-
+pthread_mutex_t listAddOrRemoveMutex = PTHREAD_MUTEX_INITIALIZER;
 int main(int argc,char** args){
     if(argc != 4){
         printf("usage: s-talk <localPort> <remoteIP> <remotePort>\n");
@@ -24,7 +27,7 @@ int main(int argc,char** args){
     printf("localPort: %s ip: %s remotePort: %s\n",localPort,remoteIp,remotePort);
 
     
-    Receiver_init(localPort);
+    Receiver_init(localPort,&listAddOrRemoveMutex);
     //Printer_int(pReceiverToPrinterBuffer);
     Sender_init(remoteIp,remotePort);
 
