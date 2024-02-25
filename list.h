@@ -15,7 +15,7 @@
 
 // Maximum total number of nodes (statically allocated) to be shared across all lists
 // (You may modify this, but reset the value to 100 when handing in your assignment)
-#define LIST_MAX_NUM_NODES 20
+#define LIST_MAX_NUM_NODES 100
 
 typedef struct Node_s Node;
 struct Node_s {
