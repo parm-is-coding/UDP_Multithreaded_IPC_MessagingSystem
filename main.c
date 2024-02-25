@@ -4,7 +4,7 @@
 
 #include "receiver.h"
 #include "sender.h"
-#include "list.h"
+
 
 //#include  "scanner.h"
 //#include "printer.h"
@@ -14,13 +14,13 @@
 //Note: printerthread encapsulated inside receiver.h
 //Note: keyboardthread encapsulated inside sender.h 
 pthread_mutex_t listAddOrRemoveMutex = PTHREAD_MUTEX_INITIALIZER;
+
 int main(int argc,char** args){
     if(argc != 4){
         printf("usage: s-talk <localPort> <remoteIP> <remotePort>\n");
         exit(1);
     }
-    List* pReceiverToPrinterBuffer = List_create();
-    List* pScannerToSenderBuffer = List_create();
+
     const char* localPort = args[1];
     const char* remoteIp = args[2];
     const char* remotePort = args[3];
