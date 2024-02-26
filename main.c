@@ -26,11 +26,10 @@ int main(int argc,char** args){
     printf("localPort: %s ip: %s remotePort: %s\n",localPort,remoteIp,remotePort);
 
     
-    Receiver_init(localPort,&listAddOrRemoveMutex);
-    //Printer_int(pReceiverToPrinterBuffer);
-    Sender_init(remoteIp,remotePort);
+    Receiver_init(localPort);
+    //Sender_init(remoteIp,remotePort);
 
     Receiver_shutDown();
-    Sender_shutDown();
+    //Sender_shutDown();
     return 0;
 }
