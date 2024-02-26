@@ -2,18 +2,21 @@
 #include <string.h>//strncpy
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <sys/types.h>
+#include <sys/socket.h>
 #include "sender.h"
 static char* senderIp;
-static char* senderPort;
+static int senderPort;
+
+
+
 void Sender_init(const char* remIp,const char* remPort){
-    senderIp = (char*)malloc(100);
-    senderPort = (char*)malloc(100);
+    senderIp = (char*)malloc(AF_MAX);
+    senderPort = atoi(remPort);
     strncpy(senderIp,remIp,100);
-    strncpy(senderPort,remPort,100);
-    printf("Sending To Address %s Port# %s\n",senderIp,senderPort);
+    printf("Sending To Address %s Port# %d\n",senderIp,senderPort);
 }
 void Sender_shutDown(void){
     free(senderIp);
-    free(senderPort);
+    
 }

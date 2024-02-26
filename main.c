@@ -27,9 +27,9 @@ int main(int argc,char** args){
 
     
     Receiver_init(localPort);
-    //Sender_init(remoteIp,remotePort);
+    Sender_init(remoteIp,remotePort);
 
     Receiver_shutDown();
-    //Sender_shutDown();
+    Sender_shutDown();
     return 0;
 }
