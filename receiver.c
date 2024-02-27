@@ -5,58 +5,40 @@
 #include <netdb.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <unistd.h>
 #include "list.h"
 #include "receiver.h"
+#include "arpa/inet.h"
 
 #define MSG_MAX_LEN 100
 #define BUFFERSIZE 100
 //static pthread_t thread;
 static int rxPort;
 static char* msgToPrint;
-static int socketDescriptor;
+static int socketFD;
+static socklen_t serverAddressSize;
+static socklen_t clientAddressSize;
+static struct sockaddr_in serverAddr; 
+static struct sockaddr_in clientAddr; 
 static List* pReceiverToPrinterBuffer;
 static pthread_t threadRecieverID;
 //static pthread_t threadPrinterID;
 static pthread_mutex_t receiverToPrinterMutex = PTHREAD_MUTEX_INITIALIZER;
 
 
-//initialize Receiver static variables and run thread fn
-//since local port is data shared between processes it is a critical section
-
 
 
 void *receiverThread(void*){
-
-     //Initialize Address Internet Interface 
-    struct sockaddr_in sin; // _in means internet
-    memset(&sin,0, sizeof(sin));
-    sin.sin_family = AF_INET;           //Connection may be from network
-    sin.sin_addr.s_addr = htonl(INADDR_ANY);  //Host to Network long
-    sin.sin_port = htons(rxPort);             //Host to Network short
-    
-    //Create the socket for UDP
-    socketDescriptor = socket(PF_INET,SOCK_DGRAM,0);
-    //Bind the socket to the port (PORT) that we specify
-    bind(socketDescriptor,(struct sockaddr*) &sin,sizeof(sin));
-
     while (1){
-        //Get the data (blocking)
-        //Will change sin (the address) to be the address of the client.
-        //Note: sin passes information in and out of call!
-        struct sockaddr_in sinRemote;
-        unsigned int sin_len = sizeof(sinRemote);
         char messageRx[MSG_MAX_LEN]; //buffer to store Message Recieved
-        recvfrom(socketDescriptor,
-            messageRx,MSG_MAX_LEN,0,
-            (struct sockaddr *) &sinRemote,&sin_len); //fills buffer with whatever data comes in on the network
-
+        recvfrom(socketFD,messageRx,MSG_MAX_LEN,0,
+        (struct sockaddr *) &clientAddr,&clientAddressSize); //fills buffer with whatever data comes in on the network
+        clientAddressSize = sizeof(clientAddr);
         //Do Something Amazing to the recieved Message!
         printf("%s\n",messageRx);
-        while(pReceiverToPrinterBuffer->numElements > BUFFERSIZE);
+        //while(pReceiverToPrinterBuffer->numElements > BUFFERSIZE);
         //Critical Section
         //prepend messageRx to List
-        
-          
     }
     printf("Done rx thread!");
     return NULL;
@@ -85,10 +67,23 @@ void *receiverThread(void*){
 
 
 void Receiver_init(const char* localPort){
+    //Initialize variables
     pReceiverToPrinterBuffer = List_create();
     rxPort = atoi(localPort);
     msgToPrint = (char*)malloc(500);
+    socketFD = socket(AF_INET,SOCK_DGRAM,0);
+    //Initialize Server address 
+    memset(&serverAddr,0, sizeof(serverAddr));
+    serverAddr.sin_family = AF_INET;           //Connection may be from network
+    serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1"); 
+    serverAddr.sin_port = htons(rxPort);             //Host to Network short
+    serverAddressSize = sizeof(serverAddr);
+    //Bind server address to localPort
+    bind(socketFD,(struct sockaddr*) &serverAddr,serverAddressSize);
     printf("Recieving From Port#%d\n",rxPort);
+    //Initialize Client address
+    memset(&clientAddr,0, sizeof(clientAddr));
+    clientAddressSize = sizeof(clientAddr);
     pthread_create(&threadRecieverID,NULL,receiverThread,NULL);
 
 
@@ -96,4 +91,6 @@ void Receiver_init(const char* localPort){
 void Receiver_shutDown(void){
     pthread_join(threadRecieverID,NULL);
     free(msgToPrint);
+    close(socketFD);
+
 }
