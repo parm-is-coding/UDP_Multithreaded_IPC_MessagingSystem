@@ -9,34 +9,35 @@
 #define LIST_SUCCESS 0
 #define LIST_FAIL -1
 
-// Maximum number of unique lists the system can support
-// (You may modify this, but reset the value to 10 when handing in your assignment)
-#define LIST_MAX_NUM_HEADS 5
-
-// Maximum total number of nodes (statically allocated) to be shared across all lists
-// (You may modify this, but reset the value to 100 when handing in your assignment)
-#define LIST_MAX_NUM_NODES 100
-
 typedef struct Node_s Node;
 struct Node_s {
     void* pItem;
-    Node* next;
-    Node* prev; 
+    Node* pNext;
+    Node* pPrev;
 };
 
 enum ListOutOfBounds {
     LIST_OOB_START,
     LIST_OOB_END
 };
+
 typedef struct List_s List;
 struct List_s{
-    enum ListOutOfBounds state;
-    Node* pCurrentItem;
-    Node* pHead;
-    int numElements;
-    
-
+    Node* pFirstNode;
+    Node* pLastNode;
+    Node* pCurrentNode;
+    int count;
+    List* pNextFreeHead;
+    enum ListOutOfBounds lastOutOfBoundsReason;
 };
+
+// Maximum number of unique lists the system can support
+// (You may modify for your needs)
+#define LIST_MAX_NUM_HEADS 100
+
+// Maximum total number of nodes (statically allocated) to be shared across all lists
+// (You may modify for your needs)
+#define LIST_MAX_NUM_NODES 1000
 
 // General Error Handling:
 // Client code is assumed never to call these functions with a NULL List pointer, or 
@@ -96,10 +97,6 @@ int List_prepend(List* pList, void* pItem);
 // then do not change the pList and return NULL.
 void* List_remove(List* pList);
 
-// Return last item and take it out of pList. Make the new last item the current one.
-// Return NULL if pList is initially empty.
-void* List_trim(List* pList);
-
 // Adds pList2 to the end of pList1. The current pointer is set to the current pointer of pList1. 
 // pList2 no longer exists after the operation; its head is available
 // for future operations.
@@ -109,8 +106,13 @@ void List_concat(List* pList1, List* pList2);
 // It should be invoked (within List_free) as: (*pItemFreeFn)(itemToBeFreedFromNode);
 // pList and all its nodes no longer exists after the operation; its head and nodes are 
 // available for future operations.
+// UPDATED: Changed function pointer type, May 19
 typedef void (*FREE_FN)(void* pItem);
 void List_free(List* pList, FREE_FN pItemFreeFn);
+
+// Return last item and take it out of pList. Make the new last item the current one.
+// Return NULL if pList is initially empty.
+void* List_trim(List* pList);
 
 // Search pList, starting at the current item, until the end is reached or a match is found. 
 // In this context, a match is determined by the comparator parameter. This parameter is a
@@ -122,6 +124,7 @@ void List_free(List* pList, FREE_FN pItemFreeFn);
 // that item is returned. If no match is found, the current pointer is left beyond the end of 
 // the list and a NULL pointer is returned.
 // 
+// UPDATED: Added May 19
 // If the current pointer is before the start of the pList, then start searching from
 // the first node in the list (if any).
 typedef bool (*COMPARATOR_FN)(void* pItem, void* pComparisonArg);
