@@ -16,7 +16,7 @@ static char* messageTx;
 static pthread_t threadSenderID;
 static int socketFD;
 static struct sockaddr_in serverAddr;
-static unsigned int sin_len;
+static unsigned int serverAddressSize;
 //static pthread_t threadKeyboardID; 
 //static List* pKeyboardToSenderBuffer;
 //static pthread_mutex_t keyboardToSenderMutex = PTHREAD_MUTEX_INITIALIZER
@@ -27,7 +27,7 @@ void* senderThread(void* unused){
         printf("Enter a message: ");
         fgets(messageTx, 100, stdin); // Read a line from the console
         sendto(socketFD,messageTx,strlen(messageTx),
-        0,(struct sockaddr*) &serverAddr,sin_len);
+        0,(struct sockaddr*) &serverAddr,serverAddressSize);
     
     }
 }
@@ -43,8 +43,8 @@ void Sender_init(const char* remIp,const char* remPort){
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_port = htons(senderPort);
     serverAddr.sin_addr.s_addr = inet_addr(senderIp);
-    sin_len = sizeof(serverAddr);
-    bind(socketFD,(struct sockaddr*) &serverAddr,sin_len);
+    serverAddressSize = sizeof(serverAddr);
+    bind(socketFD,(struct sockaddr*) &serverAddr,serverAddressSize);
  
     printf("Sending To Address %s Port# %d\n",senderIp,senderPort);
     pthread_create(&threadSenderID,NULL,senderThread,NULL);
