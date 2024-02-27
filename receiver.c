@@ -22,23 +22,56 @@ static struct sockaddr_in serverAddr;
 static struct sockaddr_in clientAddr; 
 static List* pReceiverToPrinterBuffer;
 static pthread_t threadRecieverID;
-//static pthread_t threadPrinterID;
-static pthread_mutex_t receiverToPrinterMutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_t threadPrinterID;
+static pthread_mutex_t rxtoptMutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t received = PTHREAD_COND_INITIALIZER;
+static pthread_cond_t printed = PTHREAD_COND_INITIALIZER;
+static pthread_mutex_t* pListAddRemoveMutex;
+static pthread_cond_t* pEndCond;
 
 
+void *printerThread(void*){
+    while(1){
+        pthread_mutex_lock(&rxtoptMutex);
+            pthread_cond_wait(&received,&rxtoptMutex);
+            pthread_mutex_lock(pListAddRemoveMutex);
+                char* messageToPrint = (char*)List_trim(pReceiverToPrinterBuffer);
+            pthread_mutex_unlock(pListAddRemoveMutex);
+            printf("%s",messageToPrint);
+            free(messageToPrint);
+        pthread_mutex_unlock(&rxtoptMutex);
+        pthread_cond_signal(&printed);
+    }
+    printf("Done printer thread");
+    return NULL;
+}
 
 
 void *receiverThread(void*){
+    printf("Receive thread active\n");
     while (1){
-        char messageRx[MSG_MAX_LEN]; //buffer to store Message Recieved
-        recvfrom(socketFD,messageRx,MSG_MAX_LEN,0,
-        (struct sockaddr *) (struct sockaddr *)&clientAddr,&clientAddressSize); //fills buffer with whatever data comes in on the network
-        clientAddressSize = sizeof(clientAddr);
-        //Do Something Amazing to the recieved Message!
-        printf("%s\n",messageRx);
-        //while(pReceiverToPrinterBuffer->numElements > BUFFERSIZE);
-        //Critical Section
-        //prepend messageRx to List
+        pthread_mutex_lock(&rxtoptMutex);
+            char messageRx[MSG_MAX_LEN]; //buffer to store Message Recieved
+            recvfrom(socketFD,messageRx,MSG_MAX_LEN,0,
+            (struct sockaddr *) (struct sockaddr *)&clientAddr,&clientAddressSize); //fills buffer with whatever data comes in on the network
+            clientAddressSize = sizeof(clientAddr);
+            if(strcmp(messageRx,"!")==0){
+                pthread_cond_signal(pEndCond);
+            }
+
+
+
+            pthread_mutex_lock(pListAddRemoveMutex);
+            char* messageToAdd = malloc(100);
+            strcpy(messageToAdd,messageRx);
+            List_prepend(pReceiverToPrinterBuffer,messageToAdd);
+            messageToAdd = NULL;
+            pthread_mutex_unlock(pListAddRemoveMutex);
+        pthread_mutex_unlock(&rxtoptMutex);
+        pthread_cond_signal(&received);
+        pthread_mutex_lock(&rxtoptMutex);
+            pthread_cond_wait(&printed,&rxtoptMutex);
+        pthread_mutex_unlock(&rxtoptMutex);
     }
     printf("Done rx thread!");
     return NULL;
@@ -46,28 +79,10 @@ void *receiverThread(void*){
 }
 
 
-
-
-//readBuffer() 
-//stores item at the front of the list inside passed char*
-//list.removeFront()
-//returns the item at the front of the list  
-// void printerThread(){
-//     while(1){
-//         while(pReceiverToPrinterBuffer->numElements == 0);
-//         //entry_sec()
-//         {//Critical Section 
-//             //readBuffer();
-//         }
-
-
-//     }
-
-// }
-
-
-void Receiver_init(const char* localPort){
+void Receiver_init(const char* localPort,pthread_mutex_t* pListAddRmMutex,pthread_cond_t* pEndCondition){
     //Initialize variables
+    pListAddRemoveMutex = pListAddRmMutex;
+    pEndCond = pEndCondition;
     pReceiverToPrinterBuffer = List_create();
     rxPort = atoi(localPort);
     msgToPrint = (char*)malloc(500);
@@ -84,13 +99,19 @@ void Receiver_init(const char* localPort){
     //Initialize Client address
     memset(&clientAddr,0, sizeof(clientAddr));
     clientAddressSize = sizeof(clientAddr);
+   
+   
     pthread_create(&threadRecieverID,NULL,receiverThread,NULL);
-
+    pthread_create(&threadPrinterID,NULL,printerThread,NULL);
 
 }
 void Receiver_shutDown(void){
+    printf("Receiver is off");
     pthread_join(threadRecieverID,NULL);
+    pthread_join(threadPrinterID,NULL);
     free(msgToPrint);
     close(socketFD);
 
 }
+
+

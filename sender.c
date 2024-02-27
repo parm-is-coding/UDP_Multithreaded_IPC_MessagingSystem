@@ -20,12 +20,15 @@ static unsigned int serverAddressSize;
 //static pthread_t threadKeyboardID; 
 //static List* pKeyboardToSenderBuffer;
 //static pthread_mutex_t keyboardToSenderMutex = PTHREAD_MUTEX_INITIALIZER
-
+void* keyboardThread(void* unused){
+    
+}
 void* senderThread(void* unused){
     printf("Send thread is active\n");
     while(1){
         printf("Enter a message: ");
         fgets(messageTx, 100, stdin); // Read a line from the console
+
         sendto(socketFD,messageTx,strlen(messageTx),
         0,(struct sockaddr*) &serverAddr,serverAddressSize);
     
@@ -50,6 +53,7 @@ void Sender_init(const char* remIp,const char* remPort){
     pthread_create(&threadSenderID,NULL,senderThread,NULL);
 }
 void Sender_shutDown(void){
+    printf("Sender is off");
     free(senderIp);
     free(messageTx);
     pthread_join(threadSenderID,NULL);
