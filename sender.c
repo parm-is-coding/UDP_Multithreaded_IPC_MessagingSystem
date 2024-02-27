@@ -16,7 +16,7 @@ static char* messageTx;
 static pthread_t threadSenderID;
 static int socketFD;
 static struct sockaddr_in serverAddr;
-static int sin_len;
+static unsigned int sin_len;
 //static pthread_t threadKeyboardID; 
 //static List* pKeyboardToSenderBuffer;
 //static pthread_mutex_t keyboardToSenderMutex = PTHREAD_MUTEX_INITIALIZER
