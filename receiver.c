@@ -32,7 +32,7 @@ void *receiverThread(void*){
     while (1){
         char messageRx[MSG_MAX_LEN]; //buffer to store Message Recieved
         recvfrom(socketFD,messageRx,MSG_MAX_LEN,0,
-        (struct sockaddr *) &clientAddr,&clientAddressSize); //fills buffer with whatever data comes in on the network
+        (struct sockaddr *) (struct sockaddr *)&clientAddr,&clientAddressSize); //fills buffer with whatever data comes in on the network
         clientAddressSize = sizeof(clientAddr);
         //Do Something Amazing to the recieved Message!
         printf("%s\n",messageRx);
