@@ -12,9 +12,9 @@
 
 //Note: printerthread encapsulated inside receiver.h
 //Note: keyboardthread encapsulated inside sender.h 
-pthread_mutex_t listAddOrRemoveMutex;
-pthread_mutex_t mainMutex = PTHREAD_MUTEX_INITIALIZER;
-pthread_cond_t EndCondVar;
+static pthread_mutex_t listAddOrRemoveMutex;
+static pthread_mutex_t mainMutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t EndCondVar;
 
 int main(int argc,char** args){
     if(argc != 4){
@@ -30,7 +30,7 @@ int main(int argc,char** args){
     pthread_mutex_init(&listAddOrRemoveMutex,NULL);
     pthread_cond_init(&EndCondVar,NULL);
     Receiver_init(localPort,&listAddOrRemoveMutex,&EndCondVar);
-    Sender_init(remoteIp,remotePort);
+    Sender_init(remoteIp,remotePort,&EndCondVar,&listAddOrRemoveMutex);
     pthread_mutex_lock(&mainMutex);
     pthread_cond_wait(&EndCondVar,&mainMutex);
     
