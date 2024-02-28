@@ -29,4 +29,11 @@ case(1)
 Critical Sections senderThread
 case(2)
 
+Current Issues
+
+Thread ordering on startup is random, therefore program will only receive if "receive thread is active" 
+is more recent than "send thread is active"
+
+This happens randomly one in eight startups but the program will work if this is achieved
+
 
