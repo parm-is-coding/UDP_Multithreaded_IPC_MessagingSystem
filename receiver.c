@@ -25,22 +25,23 @@ static pthread_t threadRecieverID;
 static pthread_t threadPrinterID;
 static pthread_mutex_t rxtoptMutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t received = PTHREAD_COND_INITIALIZER;
-static pthread_cond_t printed = PTHREAD_COND_INITIALIZER;
+//static pthread_cond_t printed = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t* pListAddRemoveMutex;
 static pthread_cond_t* pEndCond;
-
+static pthread_mutex_t* pMainMutex;
 
 void *printerThread(void*){
     while(1){
         pthread_mutex_lock(&rxtoptMutex);
-            pthread_cond_wait(&received,&rxtoptMutex);
+            if(List_count(pReceiverToPrinterBuffer) ==  0){
+                pthread_cond_wait(&received,&rxtoptMutex);
+            }
             pthread_mutex_lock(pListAddRemoveMutex);
                 char* messageToPrint = (char*)List_trim(pReceiverToPrinterBuffer);
             pthread_mutex_unlock(pListAddRemoveMutex);
             printf("%s",messageToPrint);
             free(messageToPrint);
         pthread_mutex_unlock(&rxtoptMutex);
-        pthread_cond_signal(&printed);
     }
     printf("Done printer thread");
     return NULL;
@@ -55,7 +56,7 @@ void *receiverThread(void*){
             recvfrom(socketFD,messageRx,MSG_MAX_LEN,0,
             (struct sockaddr *) (struct sockaddr *)&clientAddr,&clientAddressSize); //fills buffer with whatever data comes in on the network
             clientAddressSize = sizeof(clientAddr);
-            if(strcmp(messageRx,"!")==0){
+            if(strcmp(messageRx,"!\n")==0){
                 pthread_cond_signal(pEndCond);
             }
 
@@ -67,10 +68,7 @@ void *receiverThread(void*){
             List_prepend(pReceiverToPrinterBuffer,messageToAdd);
             messageToAdd = NULL;
             pthread_mutex_unlock(pListAddRemoveMutex);
-        pthread_mutex_unlock(&rxtoptMutex);
-        pthread_cond_signal(&received);
-        pthread_mutex_lock(&rxtoptMutex);
-            pthread_cond_wait(&printed,&rxtoptMutex);
+            pthread_cond_signal(&received);
         pthread_mutex_unlock(&rxtoptMutex);
     }
     printf("Done rx thread!");
@@ -79,9 +77,10 @@ void *receiverThread(void*){
 }
 
 
-void Receiver_init(const char* localPort,pthread_mutex_t* pListAddRmMutex,pthread_cond_t* pEndCondition){
+void Receiver_init(const char* localPort,pthread_mutex_t* pListAddRmMutex,pthread_cond_t* pEndCondition,pthread_mutex_t* pMMutex){
     //Initialize variables
     pListAddRemoveMutex = pListAddRmMutex;
+    pMainMutex = pMMutex;
     pEndCond = pEndCondition;
     pReceiverToPrinterBuffer = List_create();
     rxPort = atoi(localPort);

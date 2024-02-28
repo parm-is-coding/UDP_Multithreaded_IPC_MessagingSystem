@@ -24,26 +24,21 @@ static pthread_cond_t* pEndCond;
 static pthread_mutex_t* pListAddOrRemoveMutex;
 static pthread_cond_t inputVar = PTHREAD_COND_INITIALIZER;
 static pthread_cond_t sentVar = PTHREAD_COND_INITIALIZER;
+static pthread_mutex_t* pMainMutex;
 
 void* keyboardThread(void* unused){
     while(1){
         pthread_mutex_lock(&keyboardToSenderMutex);
             printf("Enter a message: ");
             fgets(messageTx, 100, stdin);
-            if(strcmp(messageTx,"!") == 0){
-                pthread_cond_signal(pEndCond);
-                exit(1);
-            }
             char* message = (char*)malloc(100);
             strcpy(message,messageTx);
             pthread_mutex_lock(pListAddOrRemoveMutex);
                 List_prepend(pKeyboardToSenderBuffer,message);
             pthread_mutex_unlock(pListAddOrRemoveMutex);
+            pthread_cond_signal(&inputVar);
         pthread_mutex_unlock(&keyboardToSenderMutex);
-        pthread_cond_signal(&inputVar);
-        pthread_mutex_lock(&keyboardToSenderMutex);
-            pthread_cond_wait(&sentVar,&keyboardToSenderMutex);
-        pthread_mutex_unlock(&keyboardToSenderMutex);
+
     }
 }
 void* senderThread(void* unused){
@@ -56,15 +51,21 @@ void* senderThread(void* unused){
             pthread_mutex_unlock(pListAddOrRemoveMutex);
         sendto(socketFD,msgtoSend,strlen(msgtoSend),
         0,(struct sockaddr*) &serverAddr,serverAddressSize);
+        if(strcmp(messageTx,"!\n") == 0){
+                pthread_mutex_lock(pMainMutex);
+                    pthread_cond_signal(pEndCond);
+                pthread_mutex_unlock(pMainMutex);
+        }
         free(msgtoSend);
         pthread_mutex_unlock(&keyboardToSenderMutex);
-        pthread_cond_signal(&sentVar);
     }
 }
+           
 
-void Sender_init(const char* remIp,const char* remPort,pthread_cond_t* pEndConditionVar,pthread_mutex_t* plistmutex){
+void Sender_init(const char* remIp,const char* remPort,pthread_cond_t* pEndConditionVar,pthread_mutex_t* plistmutex,pthread_mutex_t* pMMutex){
     //initialize variables
     pEndCond = pEndConditionVar;
+    pMainMutex = pMMutex;
     pListAddOrRemoveMutex = plistmutex;
     pKeyboardToSenderBuffer = List_create();
     messageTx = malloc(100);
