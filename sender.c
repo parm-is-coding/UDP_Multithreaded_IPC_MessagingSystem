@@ -45,7 +45,10 @@ void* senderThread(void* unused){
     printf("Send thread is active\n");
     while(1){
         pthread_mutex_lock(&keyboardToSenderMutex);
+        if(List_count(pKeyboardToSenderBuffer)== 0){
             pthread_cond_wait(&inputVar,&keyboardToSenderMutex);
+
+        }
             pthread_mutex_lock(pListAddOrRemoveMutex);
                 char* msgtoSend = List_trim(pKeyboardToSenderBuffer);
             pthread_mutex_unlock(pListAddOrRemoveMutex);

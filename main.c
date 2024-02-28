@@ -29,11 +29,11 @@ int main(int argc,char** args){
 
     pthread_mutex_init(&listAddOrRemoveMutex,NULL);
     pthread_cond_init(&EndCondVar,NULL);
-    Receiver_init(localPort,&listAddOrRemoveMutex,&EndCondVar,&mainMutex);
     Sender_init(remoteIp,remotePort,&EndCondVar,&listAddOrRemoveMutex,&mainMutex);
+    Receiver_init(localPort,&listAddOrRemoveMutex,&EndCondVar,&mainMutex);
     pthread_mutex_lock(&mainMutex);
     pthread_cond_wait(&EndCondVar,&mainMutex);
-    
+    pthread_mutex_unlock(&mainMutex);
     Receiver_shutDown();
     Sender_shutDown();
     pthread_mutex_destroy(&mainMutex);
