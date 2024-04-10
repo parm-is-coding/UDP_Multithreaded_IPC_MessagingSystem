@@ -12,5 +12,10 @@ run2: build
 
 valgrind: 
 	valgrind ./s-talk 4455 127.0.0.1 22110
+git: build
+	git add *
+	git commit
+	git push
+
 clean:
 	rm -f s-talk

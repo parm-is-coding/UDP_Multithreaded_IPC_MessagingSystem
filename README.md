@@ -1,9 +1,6 @@
-# S-Talk
+# UDP_MULTITHREADED IPC MESSAGING SYSTEM
 
 ## Notes
-credit 
-Brian Fraser Receiverthread
-
 
 ./s-talk ClientIPAddress RemoteIPAddress PortNumber 
 list is going to be shared between two modules each running its own thread
